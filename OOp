@@ -1,0 +1,23 @@
+class PetProfile:
+    def __init__(self, name, species, breed, favorite_toy, energy_level="High"):
+        self.name = name
+        self.species = species
+        self.breed = breed
+
+    def show_profile(self):
+        print(f"   PET PROFILE: {self.name.upper()}")
+        print(f"Species      : {self.species}")
+        print(f"Breed        : {self.breed}")
+
+    def make_sound(self, sound):
+        print(f"{self.name} says: '{sound}!'")
+
+dog = PetProfile(name="Buddy", species="Dog", breed="Golden Retriever", favorite_toy="Tennis Ball")
+cat = PetProfile(name="Cleo", species="Cat", breed="Siamese", favorite_toy="Feather Wand", energy_level="Medium")
+
+
+dog.show_profile()
+dog.make_sound("Woof")
+
+cat.show_profile()
+cat.make_sound("Meow")
