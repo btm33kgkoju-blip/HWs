@@ -1,0 +1,101 @@
+from tkinter import as *
+from tkinter import messagebox
+
+class ReadingPlannerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Reading Time Planner")
+        self.root.geometry("400x260")
+        self.root.resizable(False, False)
+
+        main_frame = tk.Frame(self.root, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True)
+
+        tk.Label(main_frame, text="Book Title:", font=("Arial", 10, "bold")).grid(row=0, column=0, sticky="w", pady=5)
+        self.title_entry = tk.Entry(main_frame, width=25)
+        self.title_entry.grid(row=0, column=1, pady=5)
+
+        tk.Label(main_frame, text="Total Reading Time (mins):", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=5)
+        self.time_entry = tk.Entry(main_frame, width=25)
+        self.time_entry.grid(row=1, column=1, pady=5)
+
+        tk.Label(main_frame, text="Total Days:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=5)
+        self.days_entry = tk.Entry(main_frame, width=25)
+        self.days_entry.grid(row=2, column=1, pady=5)
+
+        generate_btn = tk.Button(
+            main_frame, 
+            text="Generate Schedule", 
+            command=self.calculate_and_display, 
+            bg="#0284C7", 
+            fg="white", 
+            font=("Arial", 10, "bold")
+        )
+        generate_btn.grid(row=3, column=0, columnspan=2, pady=20)
+
+    def calculate_and_display(self):
+        title = self.title_entry.get().strip()
+
+        try:
+            if not title:
+                raise ValueError("Book title cannot be empty.")
+
+            total_minutes = int(self.time_entry.get())
+            total_days = int(self.days_entry.get())
+
+            if total_minutes <= 0 or total_days <= 0:
+                raise ValueError("Minutes and days must be positive integers.")
+
+            daily_minutes = total_minutes // total_days
+            extra_minutes = total_minutes % total_days
+
+        except ValueError as ve:
+            messagebox.showerror("Input Error", str(ve) if "invalid literal" not in str(ve) else "Please enter whole numbers for minutes and days.")
+            return
+        except ZeroDivisionError:
+            messagebox.showerror("Input Error", "Days cannot be zero.")
+            return
+
+        self.open_schedule_window(title, total_minutes, total_days, daily_minutes, extra_minutes)
+
+    def open_schedule_window(self, title, total_minutes, total_days, daily_minutes, extra_minutes):
+        # Separate Toplevel Window
+        top = tk.Toplevel(self.root)
+        top.title("Your Reading Schedule")
+        top.geometry("400x350")
+
+        tk.Label(top, text=f"Reading Plan: {title}", font=("Arial", 12, "bold")).pack(pady=(15, 5))
+        
+        hours = total_minutes // 60
+        mins = total_minutes % 60
+        time_str = f"{hours}h {mins}m" if hours > 0 else f"{total_minutes} mins"
+        
+        summary = f"Total: {time_str} over {total_days} days\nBase Pace: {daily_minutes} mins/day"
+        if extra_minutes > 0:
+            summary += f" (+{extra_minutes} extra min(s) on day 1)"
+
+        tk.Label(top, text=summary, font=("Arial", 9, "italic"), fg="gray").pack(pady=(0, 10))
+
+        frame_list = tk.Frame(top)
+        frame_list.pack(fill="both", expand=True, padx=20, pady=10)
+
+        scrollbar = tk.Scrollbar(frame_list)
+        scrollbar.pack(side="right", fill="y")
+
+        listbox = tk.Listbox(frame_list, yscrollcommand=scrollbar.set, font=("Courier", 10))
+        listbox.pack(side="left", fill="both", expand=True)
+        scrollbar.config(command=listbox.yview)
+
+        for day in range(1, total_days + 1):
+            if day == 1 and extra_minutes > 0:
+                today_time = daily_minutes + extra_minutes
+                listbox.insert("end", f"Day {day:02d}: {today_time} mins (Includes extra mins)")
+            else:
+                listbox.insert("end", f"Day {day:02d}: {daily_minutes} mins")
+
+        tk.Button(top, text="Close Window", command=top.destroy).pack(pady=10)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ReadingPlannerApp(root)
+    root.mainloop()
